@@ -32,6 +32,34 @@ int main(int argc, char* argv[]) {
         while (SDL_PollEvent(&event)) {
 
             switch (event.type) {
+                case SDL_WINDOWEVENT:
+                    if (event.window.event == SDL_WINDOWEVENT_LEAVE) {
+                        SDL_Log("La souris est sortie de la fenêtre.\n");
+                    }
+                    if (event.window.event == SDL_WINDOWEVENT_ENTER) {
+                        SDL_Log("La souris est entrée dans la fenêtre.\n");
+                    }
+                    if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+                        SDL_Log("La fenêtre a le focus.\n");
+                    }
+                    if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+                        SDL_Log("La fenêtre n'a plus le focus.\n");
+                    }
+                    break;
+                case SDL_MOUSEMOTION:
+                    // SDL_Log("Mouse moved to %d,%d\n", event.motion.x, event.motion.y);
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    // SDL_Log("Mouse moved to %d,%d\n", event.motion.x, event.motion.y);
+                    if (event.button.button == SDL_BUTTON_LEFT) {
+                        SDL_Log("Left mouse button down\n");
+                    } else if (event.button.button == SDL_BUTTON_RIGHT) {
+                        SDL_Log("Right mouse button down\n");
+                    } else if (event.button.button == SDL_BUTTON_MIDDLE) {
+                        SDL_Log("Middle mouse button down\n");
+                    }
+                    SDL_Log("Mouse clicked to %d,%d\n", event.motion.x, event.motion.y);
+                    break;
                 case SDL_QUIT:
                     program_launched = SDL_FALSE;
                     break;
