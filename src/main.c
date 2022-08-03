@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 void SDL_ExitWithError(const char *message);
 void affiche_version_sdl();
 SDL_Window * create_default_window();
@@ -25,44 +24,32 @@ int main(int argc, char* argv[]) {
         SDL_ExitWithError("Initialisation renderer");
     }
 
-    SDL_Surface *surface = SDL_LoadBMP("assets/sprites/facture_gaz_face.bmp");
-    if (surface == NULL) {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_ExitWithError("Chargement image");
+    /***************************************************/
+    SDL_bool program_launched = SDL_TRUE;
+
+    while (program_launched) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+
+            switch (event.type) {
+                case SDL_QUIT:
+                    program_launched = SDL_FALSE;
+                    break;
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+                        program_launched = SDL_FALSE;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        SDL_RenderPresent(renderer);
+        if (SDL_RenderClear(renderer) != 0) SDL_ExitWithError("Effacement renderer");
     }
+    /***************************************************/
 
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-
-    if (texture == NULL) {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_ExitWithError("Creer texture");
-    }
-
-    SDL_Rect rect = {200, 200, 100, 100};
-
-    if (SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h) != 0) {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_ExitWithError("Charger texture");
-    }
-
-    if (SDL_RenderCopy(renderer, texture, NULL, &rect) != 0) {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_ExitWithError("Afficher texture");
-    }
-
-    SDL_RenderPresent(renderer);
-
-    // if (SDL_RenderClear(renderer) != 0) SDL_ExitWithError("Effacement renderer");
-    
-
-    SDL_Delay(3000); // todo delete this line
-
-    SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
