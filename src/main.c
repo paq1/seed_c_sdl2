@@ -21,23 +21,38 @@ int main(int argc, char* argv[]) {
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == NULL) {
+        SDL_DestroyWindow(window);
         SDL_ExitWithError("Initialisation renderer");
     }
 
-    if (SDL_SetRenderDrawColor(renderer, 112, 168, 237, SDL_ALPHA_OPAQUE) != 0) {
-        SDL_ExitWithError("Initialisation couleur");
+    SDL_Surface *surface = SDL_LoadBMP("assets/sprites/facture_gaz_face.bmp");
+    if (surface == NULL) {
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_ExitWithError("Chargement image");
     }
 
-    if (SDL_RenderDrawPoint(renderer, 100, 100) != 0) {
-        SDL_ExitWithError("Dessin point");
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (texture == NULL) {
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_ExitWithError("Creer texture");
     }
 
-    if (SDL_RenderDrawLine(renderer, 200, 200, 500, 500) != 0) {
-        SDL_ExitWithError("Dessin ligne");
+    SDL_Rect rect = {200, 200, 100, 100};
+
+    if (SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h) != 0) {
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_ExitWithError("Charger texture");
     }
 
-    if (SDL_RenderDrawRect(renderer, &(SDL_Rect){100, 100, 100, 100}) != 0) {
-        SDL_ExitWithError("Dessin rectangle");
+    if (SDL_RenderCopy(renderer, texture, NULL, &rect) != 0) {
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_ExitWithError("Afficher texture");
     }
 
     SDL_RenderPresent(renderer);
@@ -47,6 +62,7 @@ int main(int argc, char* argv[]) {
 
     SDL_Delay(3000); // todo delete this line
 
+    SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
