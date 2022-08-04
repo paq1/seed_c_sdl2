@@ -18,10 +18,10 @@ POINT_O = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(POINT_C))
 all: $(EXEC)
 
 $(EXEC): $(OBJ)/main.o $(POINT_O) 
-	$(CC) $^ -o $(BIN)/$(EXEC) -I include -L lib -lmingw32 -lSDL2main -lSDL2
+	$(CC) $^ -o $(BIN)/$(EXEC) -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
 
 $(OBJ)/main.o: $(SRC)/main.c
-	$(CC) -c $(CFLAGS) $< -o $@ -I include -L lib -lmingw32 -lSDL2main -lSDL2
+	$(CC) -c $(CFLAGS) $< -o $@ -I include -L lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
 
 run: all
 	./$(BIN)/$(EXEC)

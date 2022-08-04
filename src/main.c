@@ -1,6 +1,12 @@
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+typedef struct position_t {
+    double x;
+    double y;
+} position_t;
 
 void SDL_ExitWithError(const char *message);
 void affiche_version_sdl();
@@ -11,6 +17,10 @@ int main(int argc, char* argv[]) {
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_ExitWithError("Initialisation SDL");
+    }
+
+    if (TTF_Init() != 0) {
+        SDL_ExitWithError("Initialisation TTF");
     }
 
     SDL_Window *window = create_default_window();
@@ -26,6 +36,35 @@ int main(int argc, char* argv[]) {
 
     /***************************************************/
     SDL_bool program_launched = SDL_TRUE;
+
+    unsigned int old_ticks = SDL_GetTicks();
+    double dt = 0.0;
+
+    TTF_Font * font = TTF_OpenFont("assets/fonts/dpcomic.ttf", 25);
+    SDL_Color color = { 255, 255, 255 };
+    SDL_Surface * surface_text = TTF_RenderText_Solid(font, "fps : ???", color);
+    SDL_Texture * texture_text = SDL_CreateTextureFromSurface(renderer, surface_text);
+    SDL_FreeSurface(surface_text);
+
+    SDL_Surface *surfaceSmiley = SDL_LoadBMP("assets/sprites/smiley_sdl_seed.bmp");
+    if (surfaceSmiley == NULL) {
+        TTF_CloseFont(font);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_ExitWithError("Chargement image");
+    }
+
+    SDL_Texture *textureSmiley = SDL_CreateTextureFromSurface(renderer, surfaceSmiley);
+    SDL_FreeSurface(surfaceSmiley);
+
+    if (textureSmiley == NULL) {
+        TTF_CloseFont(font);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_ExitWithError("Creer texture");
+    }
+
+    position_t position = {0, 0};
 
     while (program_launched) {
         SDL_Event event;
@@ -72,14 +111,54 @@ int main(int argc, char* argv[]) {
                     break;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+        unsigned int new_ticks = SDL_GetTicks();
+        dt = (new_ticks - old_ticks) / 1000.0;
+        old_ticks = new_ticks;
+
+        position.x += dt * 200.0;
+        position.y += dt * 100.0;
+
+        
+        SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255);
+
+
+        if (SDL_RenderCopy(renderer, textureSmiley, NULL, &(SDL_Rect){position.x, position.y, 64, 64}) != 0) {
+            TTF_CloseFont(font);
+            SDL_DestroyRenderer(renderer);
+            SDL_DestroyWindow(window);
+            SDL_ExitWithError("Afficher texture");
+        }
+
+        SDL_Rect rect = {0, 0, 0, 0};
+
+        if (SDL_QueryTexture(texture_text, NULL, NULL, &rect.w, &rect.h) != 0) {
+            TTF_CloseFont(font);
+            SDL_DestroyTexture(texture_text);
+            SDL_DestroyRenderer(renderer);
+            SDL_DestroyWindow(window);
+            SDL_ExitWithError("Charger texture");
+        }
+
+        if (SDL_RenderCopy(renderer, texture_text, NULL, &rect) != 0) {
+            TTF_CloseFont(font);
+            SDL_DestroyTexture(texture_text);
+            SDL_DestroyRenderer(renderer);
+            SDL_DestroyWindow(window);
+            SDL_ExitWithError("Afficher texture texte");
+        }
+
+
         SDL_RenderPresent(renderer);
         if (SDL_RenderClear(renderer) != 0) SDL_ExitWithError("Effacement renderer");
     }
     /***************************************************/
-
+    TTF_CloseFont(font);
+    SDL_DestroyTexture(texture_text);
+    SDL_DestroyTexture(textureSmiley);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    TTF_Quit();
     SDL_Quit();
 
     return EXIT_SUCCESS;
@@ -88,6 +167,7 @@ int main(int argc, char* argv[]) {
 void SDL_ExitWithError(const char *message)
 {
     SDL_Log("ERREUR : %s > %s\n", message, SDL_GetError());
+    TTF_Quit();
     SDL_Quit();
     exit(EXIT_FAILURE);
 }
