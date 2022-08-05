@@ -5,12 +5,14 @@
 
 #include "models/position.h"
 
+#include "game/services/sprites/draw_sprite_service.h"
 #include "game/services/draw_version_sdl.h"
 #include "game/services/sdl_init/sdl_init.h"
 #include "game/services/error/exit_with_error_message.h"
 
 #include "game/factories/window/window_group_factory.h"
 #include "game/factories/fonts/font_factory.h"
+#include "game/factories/sprites/sprites_factory.h"
 
 int main(int argc, char* argv[]) {
     
@@ -31,23 +33,14 @@ int main(int argc, char* argv[]) {
     SDL_Texture * texture_text = SDL_CreateTextureFromSurface(renderer, surface_text);
     SDL_FreeSurface(surface_text);
 
-    SDL_Surface *surfaceSmiley = SDL_LoadBMP("assets/sprites/smiley_sdl_seed.bmp");
-    if (surfaceSmiley == NULL) {
+    sprite_t *spriteSmiley = createSpriteSmileySdlSeed(renderer);
+    if (spriteSmiley == NULL) {
         TTF_CloseFont(font);
         free_window_group(window_group);
-        exitWithError("Chargement image");
+        exitWithError("sprite smiley loading error");
     }
 
-    SDL_Texture *textureSmiley = SDL_CreateTextureFromSurface(renderer, surfaceSmiley);
-    SDL_FreeSurface(surfaceSmiley);
-
-    if (textureSmiley == NULL) {
-        TTF_CloseFont(font);
-        free_window_group(window_group);
-        exitWithError("Creer texture");
-    }
-
-    position_t position = {0, 0};
+    position_t position = {0.0, 0.0};
 
     while (program_launched) {
         SDL_Event event;
@@ -101,15 +94,15 @@ int main(int argc, char* argv[]) {
 
         position.x += dt * 200.0;
         position.y += dt * 100.0;
-
+        spriteSmiley->x = position.x;
+        spriteSmiley->y = position.y;
         
         SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255);
 
-
-        if (SDL_RenderCopy(renderer, textureSmiley, NULL, &(SDL_Rect){position.x, position.y, 64, 64}) != 0) {
+        if (draw_sprite_with_scale(spriteSmiley, renderer, 2., 2.) != 0) {
             TTF_CloseFont(font);
             free_window_group(window_group);
-            exitWithError("Afficher texture");
+            exitWithError("erreur lors de l'affichage du sprite");
         }
 
         SDL_Rect rect = {0, 0, 0, 0};
@@ -135,7 +128,7 @@ int main(int argc, char* argv[]) {
     /***************************************************/
     TTF_CloseFont(font);
     SDL_DestroyTexture(texture_text);
-    SDL_DestroyTexture(textureSmiley);
+    free_sprite(spriteSmiley);
     free_window_group(window_group);
     TTF_Quit();
     SDL_Quit();
