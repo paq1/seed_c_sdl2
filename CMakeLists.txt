@@ -10,7 +10,16 @@ set(CMAKE_C_STANDARD 11)
 include_directories(include)
 link_directories(lib)
 
-add_executable(${NOM_PROJET} src/main.c)
+add_executable(
+        ${NOM_PROJET} 
+        src/main.c
+        src/game/services/draw_version_sdl.c
+        src/game/services/error/exit_with_error_message.c
+        src/game/services/sdl_init/sdl_init.c
+        src/game/factories/window/window_factory.c
+        src/game/factories/window/window_group_factory.c
+        src/game/factories/fonts/font_factory.c
+)
 
 # linkage librairie
 target_link_libraries(
