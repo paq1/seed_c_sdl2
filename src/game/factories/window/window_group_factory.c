@@ -25,8 +25,9 @@ window_group_t* create_window_group() {
     return window_group;
 }
 
-void free_window_group(window_group_t* window_group) {
-    SDL_DestroyRenderer(window_group->renderer);
-    SDL_DestroyWindow(window_group->window);
-    free(window_group);
+void free_window_group(window_group_t** window_group) {
+    SDL_DestroyRenderer((*window_group)->renderer);
+    SDL_DestroyWindow((*window_group)->window);
+    free(*window_group);
+    *window_group = NULL;
 }

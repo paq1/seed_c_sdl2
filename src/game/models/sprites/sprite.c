@@ -19,7 +19,8 @@ sprite_t * create_sprite_bmp(const char *path, SDL_Renderer *renderer) {
     return sprite;
 }
 
-void free_sprite(sprite_t *sprite) {
-    SDL_DestroyTexture(sprite->texture);
-    free(sprite);
+void free_sprite(sprite_t** sprite) {
+    SDL_DestroyTexture((*sprite)->texture);
+    free(*sprite);
+    *sprite = NULL;
 }

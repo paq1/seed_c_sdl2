@@ -5,6 +5,6 @@
 
 window_group_t* create_window_group();
 
-void free_window_group(window_group_t* window_group);
+void free_window_group(window_group_t** window_group);
 
 #endif // __WINDOW_GROUP_FACTORY_H__

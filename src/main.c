@@ -13,30 +13,35 @@
 #include "game/factories/window/window_group_factory.h"
 #include "game/factories/fonts/font_factory.h"
 #include "game/factories/sprites/sprites_factory.h"
+#include "game/factories/texts/text_factory.h"
+
+void safe_free(
+    window_group_t** window_group,
+    TTF_Font** font,
+    text_t** fps_text,
+    sprite_t** sprite_smiley
+);
 
 int main(int argc, char* argv[]) {
     
     init_sdl();
     window_group_t* window_group = create_window_group();
-    SDL_Window *window = window_group->window;
-    SDL_Renderer *renderer = window_group->renderer;
-    
-    /***************************************************/
     SDL_bool program_launched = SDL_TRUE;
 
     unsigned int old_ticks = SDL_GetTicks();
     double dt = 0.0;
+    
+    TTF_Font* font = create_comic_font(25);
 
-    TTF_Font * font = create_comic_font(25);
-    SDL_Color color = { 255, 255, 255 };
-    SDL_Surface * surface_text = TTF_RenderText_Solid(font, "fps : ???", color);
-    SDL_Texture * texture_text = SDL_CreateTextureFromSurface(renderer, surface_text);
-    SDL_FreeSurface(surface_text);
+    text_t* fps_text = create_fps_text(window_group->renderer, font);
+    if (fps_text == NULL) {
+        safe_free(&window_group, &font, NULL, NULL);
+        exitWithError("Error when creating fps text");
+    }
 
-    sprite_t *spriteSmiley = createSpriteSmileySdlSeed(renderer);
+    sprite_t* spriteSmiley = createSpriteSmileySdlSeed(window_group->renderer);
     if (spriteSmiley == NULL) {
-        TTF_CloseFont(font);
-        free_window_group(window_group);
+        safe_free(&window_group, &font, &fps_text, NULL);
         exitWithError("sprite smiley loading error");
     }
 
@@ -97,41 +102,62 @@ int main(int argc, char* argv[]) {
         spriteSmiley->x = position.x;
         spriteSmiley->y = position.y;
         
-        SDL_SetRenderDrawColor(renderer, 255, 100, 100, 255);
+        SDL_SetRenderDrawColor(window_group->renderer, 255, 100, 100, 255);
 
-        if (draw_sprite_with_scale(spriteSmiley, renderer, 2., 2.) != 0) {
-            TTF_CloseFont(font);
-            free_window_group(window_group);
+        if (draw_sprite_with_scale(spriteSmiley, window_group->renderer, 2., 2.) != 0) {
+            safe_free(&window_group, &font, &fps_text, &spriteSmiley);
             exitWithError("erreur lors de l'affichage du sprite");
         }
 
         SDL_Rect rect = {0, 0, 0, 0};
 
-        if (SDL_QueryTexture(texture_text, NULL, NULL, &rect.w, &rect.h) != 0) {
-            TTF_CloseFont(font);
-            SDL_DestroyTexture(texture_text);
-            free_window_group(window_group);
+        if (SDL_QueryTexture(fps_text->texture, NULL, NULL, &rect.w, &rect.h) != 0) {
+            safe_free(&window_group, &font, &fps_text, &spriteSmiley);
             exitWithError("Charger texture");
         }
 
-        if (SDL_RenderCopy(renderer, texture_text, NULL, &rect) != 0) {
-            TTF_CloseFont(font);
-            SDL_DestroyTexture(texture_text);
-            free_window_group(window_group);
+        if (SDL_RenderCopy(window_group->renderer, fps_text->texture, NULL, &rect) != 0) {
+            safe_free(&window_group, &font, &fps_text, &spriteSmiley);
             exitWithError("Afficher texture texte");
         }
 
-
-        SDL_RenderPresent(renderer);
-        if (SDL_RenderClear(renderer) != 0) exitWithError("Effacement renderer");
+        SDL_RenderPresent(window_group->renderer);
+        if (SDL_RenderClear(window_group->renderer) != 0) exitWithError("Effacement renderer");
     }
     /***************************************************/
-    TTF_CloseFont(font);
-    SDL_DestroyTexture(texture_text);
-    free_sprite(spriteSmiley);
-    free_window_group(window_group);
+    safe_free(&window_group, &font, &fps_text, &spriteSmiley);
     TTF_Quit();
     SDL_Quit();
 
     return EXIT_SUCCESS;
+}
+
+void safe_free(
+    window_group_t** window_group,
+    TTF_Font** font,
+    text_t** fps_text,
+    sprite_t** sprite_smiley
+) {
+    if (fps_text != NULL) free_text(fps_text);
+    if (sprite_smiley != NULL) free_sprite(sprite_smiley);
+    if (*font != NULL) {
+        TTF_CloseFont(*font);
+        *font = NULL;
+    }
+    if (window_group != NULL) free_window_group(window_group);
+    
+    if (*fps_text == NULL) {
+        printf("suppression fps_text : OK\n");
+    }
+    if (*sprite_smiley == NULL) {
+        printf("suppression sprite_smiley : OK\n");
+    }
+    if (*font == NULL) {
+        printf("suppression font : OK\n");
+    }
+    if (*window_group == NULL) {
+        printf("suppression window_group : OK\n");
+    }
+
+    printf("suppression des ressources : Completed\n");
 }

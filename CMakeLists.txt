@@ -14,6 +14,7 @@ add_executable(
         ${NOM_PROJET} 
         src/main.c
         src/game/models/sprites/sprite.c
+        src/game/models/texts/text.c
         src/game/services/draw_version_sdl.c
         src/game/services/sprites/draw_sprite_service.c
         src/game/services/error/exit_with_error_message.c
@@ -22,6 +23,7 @@ add_executable(
         src/game/factories/window/window_group_factory.c
         src/game/factories/fonts/font_factory.c
         src/game/factories/sprites/sprites_factory.c
+        src/game/factories/texts/text_factory.c
 )
 
 # linkage librairie
