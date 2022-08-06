@@ -6,13 +6,14 @@ project(${NOM_PROJET})
 
 set(CMAKE_C_STANDARD 11)
 
-# lib sfml
+# lib sdl2 and others
 include_directories(include)
 link_directories(lib)
 
 add_executable(
         ${NOM_PROJET} 
         src/main.c
+        src/core/services/string/string_commun_service.c
         src/game/models/sprites/sprite.c
         src/game/models/texts/text.c
         src/game/services/draw_version_sdl.c
@@ -30,4 +31,13 @@ add_executable(
 target_link_libraries(
         ${NOM_PROJET}
         -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf
+)
+
+set(TEST test)
+
+add_executable(
+        ${TEST} 
+        test/test_main.c
+        src/core/services/string/string_commun_service.c
+        test/core/services/string/string_commun_service_spec.c
 )
