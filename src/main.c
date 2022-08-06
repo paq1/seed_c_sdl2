@@ -6,6 +6,8 @@
 #include "models/position.h"
 
 #include "game/services/sprites/draw_sprite_service.h"
+#include "game/services/texts/fps_text_service.h"
+#include "game/services/texts/draw_text_service.h"
 #include "game/services/draw_version_sdl.h"
 #include "game/services/sdl_init/sdl_init.h"
 #include "game/services/error/exit_with_error_message.h"
@@ -46,6 +48,9 @@ int main(int argc, char* argv[]) {
     }
 
     position_t position = {0.0, 0.0};
+
+    double timer = 0.0;
+    int frames = 0;
 
     while (program_launched) {
         SDL_Event event;
@@ -97,6 +102,19 @@ int main(int argc, char* argv[]) {
         dt = (new_ticks - old_ticks) / 1000.0;
         old_ticks = new_ticks;
 
+        timer += dt;
+        frames++;
+        if (timer > 1.0) {
+            timer = 0.0;
+            fps_text = update_fps_text(
+                window_group->renderer,
+                fps_text,
+                frames,
+                font
+            );
+            frames = 0;
+        }
+
         position.x += dt * 200.0;
         position.y += dt * 100.0;
         spriteSmiley->x = position.x;
@@ -109,16 +127,9 @@ int main(int argc, char* argv[]) {
             exitWithError("erreur lors de l'affichage du sprite");
         }
 
-        SDL_Rect rect = {0, 0, 0, 0};
-
-        if (SDL_QueryTexture(fps_text->texture, NULL, NULL, &rect.w, &rect.h) != 0) {
+        if (draw_text(fps_text, window_group->renderer, 0, 0) != 0) {
             safe_free(&window_group, &font, &fps_text, &spriteSmiley);
-            exitWithError("Charger texture");
-        }
-
-        if (SDL_RenderCopy(window_group->renderer, fps_text->texture, NULL, &rect) != 0) {
-            safe_free(&window_group, &font, &fps_text, &spriteSmiley);
-            exitWithError("Afficher texture texte");
+            exitWithError("erreur lors de l'affichage du texte");
         }
 
         SDL_RenderPresent(window_group->renderer);

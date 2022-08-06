@@ -13,10 +13,12 @@ link_directories(lib)
 add_executable(
         ${NOM_PROJET} 
         src/main.c
-        src/core/services/string/string_commun_service.c
         src/game/models/sprites/sprite.c
         src/game/models/texts/text.c
+        src/core/services/string/string_commun_service.c
         src/game/services/draw_version_sdl.c
+        src/game/services/texts/fps_text_service.c
+        src/game/services/texts/draw_text_service.c
         src/game/services/sprites/draw_sprite_service.c
         src/game/services/error/exit_with_error_message.c
         src/game/services/sdl_init/sdl_init.c

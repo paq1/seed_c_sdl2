@@ -22,7 +22,5 @@ int draw_sprite_with_scale(const sprite_t *sprite, SDL_Renderer *renderer, doubl
         return -1;
     }
 
-    if (SDL_RenderCopy(renderer, sprite->texture, NULL, &(SDL_Rect){sprite->x, sprite->y, rect.w * scaleX, rect.h * scaleY}) != 0) {
-        return -1;
-    }
+    return SDL_RenderCopy(renderer, sprite->texture, NULL, &(SDL_Rect){sprite->x, sprite->y, rect.w * scaleX, rect.h * scaleY});
 }
